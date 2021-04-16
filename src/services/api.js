@@ -1,5 +1,5 @@
-//const baseUrl = 'https://api.b7web.com.br/devcond/api/admin';
-const baseUrl = 'http://127.0.0.1:8000/api/admin';
+const baseUrl = 'https://api.b7web.com.br/devcond/api/admin';
+//const baseUrl = 'http://127.0.0.1:8000/api/admin';
 //const baseUrl = 'https://condominus.l7code.com.br/api';
 
 const request = async (method, endpoint, params, token = null) => {
@@ -118,6 +118,31 @@ export default () => {
         getReservations: async () => {
             let token = localStorage.getItem('token');
             let json = await request('get', '/reservations', {}, token);
+            return json
+        },
+        getUnits: async () => {
+            let token = localStorage.getItem('token');
+            let json = await request('get', '/units', {}, token);
+            return json
+        },
+        getAreas: async () => {
+            let token = localStorage.getItem('token');
+            let json = await request('get', '/areas', {}, token);
+            return json
+        },
+        addReservation: async (data) => {
+            let token = localStorage.getItem('token');
+            let json = await request('post', '/reservations', data, token);
+            return json
+        },
+        updateReservation: async (id, data) => {
+            let token = localStorage.getItem('token');
+            let json = await request('put', `/reservation/${id}`, data, token);
+            return json
+        },
+        removeReservation: async (id) => {
+            let token = localStorage.getItem('token');
+            let json = await request('delete', `/reservation/${id}`, {}, token);
             return json
         },
     }
