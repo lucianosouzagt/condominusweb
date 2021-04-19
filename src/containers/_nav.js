@@ -1,3 +1,4 @@
+
 const _nav =  [
   {
     _tag: 'CSidebarNavItem',
@@ -18,12 +19,18 @@ const _nav =  [
   {
     _tag: 'CSidebarNavItem',
     name: 'Documentos',
-    to: '/Doc',
+    to: '/doc',
     icon: 'cil-file'
   },
   {
     _tag: 'CSidebarNavItem',
-    name: 'Reversas',
+    name: 'Boletos',
+    to: '/billets',
+    icon: 'cil-calculator'
+  },
+  {
+    _tag: 'CSidebarNavItem',
+    name: 'Reservas',
     to: '/reservations',
     icon: 'cil-calendar'
   },
@@ -81,7 +88,7 @@ const _nav =  [
     _tag: 'CSidebarNavItem',
     name: 'Sair',
     to: '/logout',
-    icon: 'cil-drop'
+    icon: 'cil-chevron-left'
   },
 ]
 

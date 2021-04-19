@@ -18,7 +18,7 @@ export default () => {
     const fields = [
         {label: 'Título', key: 'title'},
         {label: 'Data de criação', key: 'datecreated',_style:{width: '250px'}},
-        {label: 'Ações', key: 'actions', _style:{width: '1px'}},
+        {label: 'Ações', key: 'actions', _style:{width: '1px'},sorter: false, filter: false},
     ];
 
     const handleCloseModal = () => {
@@ -109,6 +109,8 @@ export default () => {
                                 fields={fields}
                                 loading={loading}
                                 noItemsViewSlot=" "
+                                columnFilter
+                                sorter
                                 hover
                                 striped
                                 bordered

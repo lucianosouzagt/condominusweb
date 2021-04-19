@@ -7,6 +7,7 @@ import {
   CSidebarMinimizer,
   CSidebarNavItem,
   CRow,
+  CImg,
 } from '@coreui/react'
 
 // sidebar nav config
@@ -18,7 +19,7 @@ const TheSidebar = () => {
     <CSidebar>
       <CSidebarNav>
         <CRow className="m-3 bg-white rounded">
-          <img src="homelogo-2.png" className="mt-2 mb-2 ml-auto mr-auto" width="80%"/>
+          <CImg src="homelogo-2.png" className="mt-2 mb-2 ml-auto mr-auto" width="80%"/>
         </CRow>
         <CCreateElement
           items={navigation}

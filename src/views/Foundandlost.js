@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCol, CDataTable, CForm, CFormGroup, CInput, CLabel, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTextarea } from '@coreui/react';
+import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCol, CDataTable, CForm, CFormGroup, CImg, CInput, CLabel, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTextarea } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import useApi from '../services/api';
 
@@ -10,14 +10,18 @@ export default () => {
     const [showModal, setShowModal] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
     const [delLoading, setDelLoading] = useState(false);
-    const [modalTitle, setModalTitle] = useState('');
+    const [modalDesc, setModalDesc] = useState('');
+    const [modalWhere, setModalWhere] = useState('');
     const [modalFileField, setModalFileField] = useState('');
     const [modalId, setModalId] = useState('');
 
 
     const fields = [
-        {label: 'Título', key: 'title'},
-        {label: 'Data de criação', key: 'datecreated',_style:{width: '250px'}},
+        {label: 'Fotos', key: 'photo', sorter: false, filter: false},
+        {label: 'Descrição', key: 'description'},
+        {label: 'Local', key: 'where'},
+        {label: 'Status', key: 'status',_style:{width: '100px'}},
+        {label: 'Data de criação', key: 'datecreated_formate',_style:{width: '170px'}},
         {label: 'Ações', key: 'actions', _style:{width: '1px'},sorter: false, filter: false},
     ];
 
@@ -27,24 +31,29 @@ export default () => {
 
     const handleAddModal = () => {
         setModalId('');
-        setModalTitle('');
+        setModalDesc('');
+        setModalWhere('');
         setShowModal(true);
     };
 
-    const handleDownloadButton = (index) => {
-        window.open(list[index]['fileurl']);
+    const handleDoneButton = async (index) => {
+        setDelLoading(true);
+        const result = await api.doneFoundAndLost(list[index]['id']);
+        getList();
+        setDelLoading(false);
     }
 
     const handleEditButton = (index) => {
         setModalId(list[index]['id']);
-        setModalTitle(list[index]['title']);
+        setModalDesc(list[index]['description']);
+        setModalWhere(list[index]['where']);
         setShowModal(true);
     };
 
     const handleDelButton = async (index) => {
         if(window.confirm('Tem certeza que deseja excluir?')){
             setDelLoading(true);
-            const result = await api.removeDoc(list[index]['id']);
+            const result = await api.removeFoundAndLost(list[index]['id']);
             setDelLoading(false);
             if(result.error === ''){
                 getList();
@@ -56,16 +65,17 @@ export default () => {
 
     
     const handleSaveModal = async () => {
-        if(modalTitle){
+        if(modalDesc && modalWhere){
             setModalLoading(true);
             let result;
             let data = {
-                title: modalTitle,
+                description: modalDesc,
+                where: modalWhere,
             };
             if(modalId === ''){
                 if(modalFileField){
                     data.file = modalFileField;
-                    result = await api.addDocFile(data);
+                    result = await api.addFoundAndLost(data);
                 }else{
                     alert('Selecione o arquivo!');
                     setModalLoading(false);
@@ -75,7 +85,7 @@ export default () => {
                 if(modalFileField){
                     data.file = modalFileField;
                 }
-                result = await api.updateDocFile(modalId, data);
+                result = await api.updateFoundAndLost(modalId, data);
             }            
             setModalLoading(false);
             if(result.error === ''){
@@ -95,7 +105,7 @@ export default () => {
 
     const getList = async () => {
         setLoading(true);
-        const result = await api.getDoc();
+        const result = await api.getFoundAndLost();
         setLoading(false);
         if(result.error === ''){
             setList(result.list);
@@ -107,11 +117,11 @@ export default () => {
         <>
             <CRow>
                 <CCol>
-                    <h2>Documentos</h2>
+                    <h2>Achados e Perdidos</h2>
                     <CCard>
                         <CCardHeader>
                             <CButton color="primary" onClick={handleAddModal}>
-                                <CIcon name="cil-check" /> Novo Documento
+                                <CIcon name="cil-check" /> Novo Item
                             </CButton>
                         </CCardHeader>
                         <CCardBody>
@@ -128,11 +138,14 @@ export default () => {
                                 pagination
                                 itemsPerPage={5}
                                 scopedSlots={{
+                                    'photo': (item, index) => (
+                                        <CImg src={item.photo} className="m-3" width="50px"/>
+                                    ),
                                     'actions': (item, index) => (
                                         <td>
                                             <CButtonGroup>
-                                                <CButton size="sm" color="success" disabled={delLoading} onClick={()=>handleDownloadButton(index)}>
-                                                    <CIcon name="cil-cloud-download" />
+                                                <CButton size="sm" color="success" disabled={delLoading} onClick={()=>handleDoneButton(index)}>
+                                                    {item.status == "lost" ?  <CIcon name="cil-check" /> : <CIcon name="cil-ban" />}                                                    
                                                 </CButton>
                                                 <CButton size="sm" color="info" disabled={delLoading} onClick={()=>handleEditButton(index)}>Editar</CButton>
                                                 <CButton size="sm" color="danger" disabled={delLoading} onClick={()=>handleDelButton(index)}>Excluir</CButton>
@@ -149,18 +162,29 @@ export default () => {
             <CModal show={showModal} onClose={handleCloseModal}>
                 <CModalHeader closeButton>
                     <CModalTitle>
-                        {modalId===''? 'Novo': 'Editar'} Documento 
+                        {modalId===''? 'Novo': 'Editar'} Item
                     </CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <CFormGroup>
-                        <CLabel htmlFor="title">Título do documento</CLabel>
+                        <CLabel htmlFor="description">Descrição</CLabel>
                         <CInput
                             type="text"
-                            id="title"
-                            placeholder="Digite um título"
-                            value={modalTitle}
-                            onChange={e=>setModalTitle(e.target.value)}
+                            id="description"
+                            placeholder="Digite a descrição"
+                            value={modalDesc}
+                            onChange={e=>setModalDesc(e.target.value)}
+                            disabled={modalLoading}
+                        />
+                    </CFormGroup>
+                    <CFormGroup>
+                        <CLabel htmlFor="where">Onde foi encontrado</CLabel>
+                        <CInput
+                            type="text"
+                            id="where"
+                            placeholder="Digite o local"
+                            value={modalWhere}
+                            onChange={e=>setModalWhere(e.target.value)}
                             disabled={modalLoading}
                         />
                     </CFormGroup>

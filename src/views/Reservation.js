@@ -46,7 +46,8 @@ export default () => {
         setShowModal(true);
     };
 
-    const handleDelButton = async (index) => {
+    const handleDelButton = async (id) => {
+        let index = list.findIndex(v=>v.id===id);
         if(window.confirm('Tem certeza que deseja excluir?')){
             setDelLoading(true);
             const result = await api.removeReservation(list[index]['id']);
@@ -65,9 +66,9 @@ export default () => {
             setModalLoading(true);
             let result;
             let data = {
-                id_unit: unitId,
-                id_area: areaId,
-                reservation_date: dateField
+                property: unitId,
+                area: areaId,
+                date: dateField
             };
             if(modalId === ''){
                 result = await api.addReservation(data);
@@ -153,7 +154,7 @@ export default () => {
                                         <td>
                                             <CButtonGroup>
                                                 <CButton size="sm" color="info" disabled={modalUnitList.length===0||modalAreaList.length===0||delLoading} onClick={()=>handleEditButton(item.id)}>Editar</CButton>
-                                                <CButton size="sm" color="danger" disabled={delLoading} onClick={()=>handleDelButton(index)}>Excluir</CButton>
+                                                <CButton size="sm" color="danger" disabled={delLoading} onClick={()=>handleDelButton(item.id)}>Excluir</CButton>
                                             </CButtonGroup>
                                         </td>
                                     )
@@ -171,71 +172,71 @@ export default () => {
                     </CModalTitle>
                 </CModalHeader>
                 <CModalBody>
-                    <CForm>
-                        <CFormGroup>
-                            <CLabel htmlFor="unit">Unidade</CLabel>
-                            <CSelect
-                                id="unit"
-                                custom
-                                onChange={e=>setUnitId(e.target.value)}
-                                disabled={modalLoading}
-                                value={unitId}
-                            >
-                                {modalUnitList.map((item, index)=>(
-                                    <option
-                                        key={index}
-                                        value={item.id}
-                                    >
-                                        {item.name}
-                                    </option>
-                                ))}
-                            </CSelect>
-                        </CFormGroup>
-                        <CFormGroup>
-                            <CLabel htmlFor="area">Área</CLabel>
-                            <CSelect
-                                id="area"
-                                custom
-                                onChange={e=>setAreaId(e.target.value)}
-                                disabled={modalLoading}
-                                value={areaId}
-                            >
-                                {modalAreaList.map((item, index)=>(
-                                    <option
-                                        key={index}
-                                        value={item.id}
-                                    >
-                                        {item.title}
-                                    </option>
-                                ))}
-                            </CSelect>
-                        </CFormGroup>
-                        <CFormGroup>
-                            <CLabel htmlFor="date">Data da Reserva</CLabel>
-                            <CInput
-                                type="text"
-                                id="date"
-                                value={dateField}
-                                onChange={e=>setDateField(e.target.value)}
-                                disabled={modalLoading}
-                            />
-                        </CFormGroup>                            
-                        <CButton
-                            color="primary"
-                            onClick={handleSaveModal}
+                    <CFormGroup>
+                        <CLabel htmlFor="unit">Unidade</CLabel>
+                        <CSelect
+                            id="unit"
+                            custom
+                            onChange={e=>setUnitId(e.target.value)}
                             disabled={modalLoading}
+                            value={unitId}
                         >
-                            {modalLoading ? 'Carregando...' : 'Salvar'}
-                        </CButton>
-                        <CButton 
-                            color="secondary"
-                            onClick={handleCloseModal}
+                            {modalUnitList.map((item, index)=>(
+                                <option
+                                    key={index}
+                                    value={item.id}
+                                >
+                                    {item.name}
+                                </option>
+                            ))}
+                        </CSelect>
+                    </CFormGroup>
+                    <CFormGroup>
+                        <CLabel htmlFor="area">Área</CLabel>
+                        <CSelect
+                            id="area"
+                            custom
+                            onChange={e=>setAreaId(e.target.value)}
                             disabled={modalLoading}
+                            value={areaId}
                         >
-                            Cancelar
-                        </CButton>
-                    </CForm>
+                            {modalAreaList.map((item, index)=>(
+                                <option
+                                    key={index}
+                                    value={item.id}
+                                >
+                                    {item.title}
+                                </option>
+                            ))}
+                        </CSelect>
+                    </CFormGroup>
+                    <CFormGroup>
+                        <CLabel htmlFor="date">Data da Reserva</CLabel>
+                        <CInput
+                            type="text"
+                            id="date"
+                            value={dateField}
+                            onChange={e=>setDateField(e.target.value)}
+                            disabled={modalLoading}
+                        />
+                    </CFormGroup>
                 </CModalBody>
+                <CModalFooter>                                
+                    <CButton
+                        color="primary"
+                        onClick={handleSaveModal}
+                        disabled={modalLoading}
+                    >
+                        {modalLoading ? 'Carregando...' : 'Salvar'}
+                    </CButton>
+                    <CButton 
+                        color="secondary"
+                        onClick={handleCloseModal}
+                        disabled={modalLoading}
+                    >
+                        Cancelar
+                    </CButton>
+                </CModalFooter>
             </CModal>
 
         </>

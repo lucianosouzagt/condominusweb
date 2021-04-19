@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCol, CDataTable, CForm, CFormGroup, CInput, CLabel, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CTextarea } from '@coreui/react';
+import { CButton, CButtonGroup, CCard, CCardBody, CCardHeader, CCol, CDataTable, CForm, CFormGroup, CInput, CLabel, CModal, CModalBody, CModalFooter, CModalHeader, CModalTitle, CRow, CSelect } from '@coreui/react';
 import CIcon from '@coreui/icons-react';
 import useApi from '../services/api';
 
@@ -9,6 +9,8 @@ export default () => {
     const [list, setList] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const [modalLoading, setModalLoading] = useState(false);
+    const [modalUnitList, setModalUnitList] = useState([]);
+    const [unitId, setUnitId] = useState(0);
     const [delLoading, setDelLoading] = useState(false);
     const [modalTitle, setModalTitle] = useState('');
     const [modalFileField, setModalFileField] = useState('');
@@ -17,6 +19,7 @@ export default () => {
 
     const fields = [
         {label: 'Título', key: 'title'},
+        {label: 'Apartamento', key: 'name'},
         {label: 'Data de criação', key: 'datecreated',_style:{width: '250px'}},
         {label: 'Ações', key: 'actions', _style:{width: '1px'},sorter: false, filter: false},
     ];
@@ -35,16 +38,19 @@ export default () => {
         window.open(list[index]['fileurl']);
     }
 
-    const handleEditButton = (index) => {
+    const handleEditButton = (id) => {
+        let index = list.findIndex(v=>v.id===id);
         setModalId(list[index]['id']);
         setModalTitle(list[index]['title']);
+        setUnitId(list[index]['id_unit']);
         setShowModal(true);
     };
 
-    const handleDelButton = async (index) => {
+    const handleDelButton = async (id) => {
+        let index = list.findIndex(v=>v.id===id);
         if(window.confirm('Tem certeza que deseja excluir?')){
             setDelLoading(true);
-            const result = await api.removeDoc(list[index]['id']);
+            const result = await api.removeBillet(list[index]['id']);
             setDelLoading(false);
             if(result.error === ''){
                 getList();
@@ -61,11 +67,12 @@ export default () => {
             let result;
             let data = {
                 title: modalTitle,
+                unit: unitId,
             };
             if(modalId === ''){
                 if(modalFileField){
                     data.file = modalFileField;
-                    result = await api.addDocFile(data);
+                    result = await api.addBilletFile(data);
                 }else{
                     alert('Selecione o arquivo!');
                     setModalLoading(false);
@@ -75,7 +82,7 @@ export default () => {
                 if(modalFileField){
                     data.file = modalFileField;
                 }
-                result = await api.updateDocFile(modalId, data);
+                result = await api.updateBilletFile(modalId, data);
             }            
             setModalLoading(false);
             if(result.error === ''){
@@ -91,11 +98,12 @@ export default () => {
    
     useEffect(() => {
         getList();
+        getUnitsList();
     },[]);
 
     const getList = async () => {
         setLoading(true);
-        const result = await api.getDoc();
+        const result = await api.getBillet();
         setLoading(false);
         if(result.error === ''){
             setList(result.list);
@@ -103,15 +111,25 @@ export default () => {
             alert(result.error);
         }
     };
+    const getUnitsList = async () => {
+        const result = await api.getUnits();
+        if(result.error === ''){
+            setModalUnitList(result.list);
+        }
+    };
     return (
         <>
             <CRow>
                 <CCol>
-                    <h2>Documentos</h2>
+                    <h2>Boletos</h2>
                     <CCard>
                         <CCardHeader>
-                            <CButton color="primary" onClick={handleAddModal}>
-                                <CIcon name="cil-check" /> Novo Documento
+                            <CButton 
+                                color="primary" 
+                                onClick={handleAddModal}
+                                disabled={modalUnitList.length===0}
+                            >
+                                <CIcon name="cil-check" /> Novo Boleto
                             </CButton>
                         </CCardHeader>
                         <CCardBody>
@@ -134,8 +152,8 @@ export default () => {
                                                 <CButton size="sm" color="success" disabled={delLoading} onClick={()=>handleDownloadButton(index)}>
                                                     <CIcon name="cil-cloud-download" />
                                                 </CButton>
-                                                <CButton size="sm" color="info" disabled={delLoading} onClick={()=>handleEditButton(index)}>Editar</CButton>
-                                                <CButton size="sm" color="danger" disabled={delLoading} onClick={()=>handleDelButton(index)}>Excluir</CButton>
+                                                <CButton size="sm" color="info" disabled={delLoading} onClick={()=>handleEditButton(item.id)}>Editar</CButton>
+                                                <CButton size="sm" color="danger" disabled={delLoading} onClick={()=>handleDelButton(item.id)}>Excluir</CButton>
                                             </CButtonGroup>
                                         </td>
                                     )
@@ -149,12 +167,12 @@ export default () => {
             <CModal show={showModal} onClose={handleCloseModal}>
                 <CModalHeader closeButton>
                     <CModalTitle>
-                        {modalId===''? 'Novo': 'Editar'} Documento 
+                        {modalId===''? 'Novo': 'Editar'} Boleto
                     </CModalTitle>
                 </CModalHeader>
                 <CModalBody>
                     <CFormGroup>
-                        <CLabel htmlFor="title">Título do documento</CLabel>
+                        <CLabel htmlFor="title">Título do boleto</CLabel>
                         <CInput
                             type="text"
                             id="title"
@@ -163,6 +181,25 @@ export default () => {
                             onChange={e=>setModalTitle(e.target.value)}
                             disabled={modalLoading}
                         />
+                    </CFormGroup>
+                    <CFormGroup>
+                        <CLabel htmlFor="unit">Unidade</CLabel>
+                        <CSelect
+                            id="unit"
+                            custom
+                            onChange={e=>setUnitId(e.target.value)}
+                            disabled={modalLoading}
+                            value={unitId}
+                        >
+                            {modalUnitList.map((item, index)=>(
+                                <option
+                                    key={index}
+                                    value={item.id}
+                                >
+                                    {item.name}
+                                </option>
+                            ))}
+                        </CSelect>
                     </CFormGroup>
                     <CFormGroup>
                         <CLabel htmlFor="file">Arquivo</CLabel>
@@ -175,7 +212,7 @@ export default () => {
                         />
                     </CFormGroup>                    
                 </CModalBody>
-                <CModalFooter>                
+                <CModalFooter>
                     <CButton
                         color="primary"
                         onClick={handleSaveModal}

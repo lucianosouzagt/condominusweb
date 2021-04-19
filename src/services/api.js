@@ -1,5 +1,5 @@
-const baseUrl = 'https://api.b7web.com.br/devcond/api/admin';
-//const baseUrl = 'http://127.0.0.1:8000/api/admin';
+//const baseUrl = 'https://api.b7web.com.br/devcond/api/admin';
+const baseUrl = 'http://127.0.0.1:8000/api/admin';
 //const baseUrl = 'https://condominus.l7code.com.br/api';
 
 const request = async (method, endpoint, params, token = null) => {
@@ -132,7 +132,7 @@ export default () => {
         },
         addReservation: async (data) => {
             let token = localStorage.getItem('token');
-            let json = await request('post', '/reservations', data, token);
+            let json = await request('post', '/reservation', data, token);
             return json
         },
         updateReservation: async (id, data) => {
@@ -143,6 +143,110 @@ export default () => {
         removeReservation: async (id) => {
             let token = localStorage.getItem('token');
             let json = await request('delete', `/reservation/${id}`, {}, token);
+            return json
+        },
+        getBillet: async () => {
+            let token = localStorage.getItem('token');
+            let json = await request('get', '/billets', {}, token);
+            return json
+        },
+        addBilletFile: async (data) => {
+            let token = await localStorage.getItem('token');
+            let formData = new FormData();
+            formData.append('unit', data.unit);
+            formData.append('title', data.title);
+            if (data.file) {
+                formData.append('billet', data.file);
+            }
+            
+            let req = await fetch(`${baseUrl}/billet`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            let json = await req.json();
+            return json;
+        },
+        updateBilletFile: async (id, data) => {
+            let token = await localStorage.getItem('token');
+            let formData = new FormData();
+            formData.append('unit', data.unit);
+            formData.append('title', data.title);
+            if (data.file) {
+                formData.append('billet', data.file);
+            }
+            
+            let req = await fetch(`${baseUrl}/billet/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            let json = await req.json();
+            return json;
+        },
+        removeBillet: async (id) => {
+            let token = localStorage.getItem('token');
+            let json = await request('delete', `/billet/${id}`, {}, token);
+            return json
+        },
+        getFoundAndLost: async () => {
+            let token = localStorage.getItem('token');
+            let json = await request('get', '/foundandlost', {}, token);
+            return json
+        },
+        doneFoundAndLost: async (id) => {
+            let token = localStorage.getItem('token');
+            let json = await request('put', `/foundandlost/${id}`, {}, token);
+            return json
+        },
+        addFoundAndLost: async (data) => {
+            let token = await localStorage.getItem('token');
+            let formData = new FormData();
+            formData.append('description', data.description);
+            formData.append('where', data.where);
+            formData.append('photo', data.file);
+            
+            let req = await fetch(`${baseUrl}/foundandlost/`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            let json = await req.json();
+            return json;
+        },
+        updateFoundAndLost: async (id, data) => {
+            let token = await localStorage.getItem('token');
+            let formData = new FormData();
+            formData.append('description', data.description);
+            formData.append('where', data.where);
+            if (data.file) {
+                formData.append('photo', data.file);
+            }
+            
+            let req = await fetch(`${baseUrl}/foundandlost/${id}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            let json = await req.json();
+            return json;
+        },
+        removeFoundAndLost: async (id) => {
+            let token = localStorage.getItem('token');
+            let json = await request('delete', `/foundandlost/${id}`, {}, token);
+            return json
+        },
+        getWarnings: async () => {
+            let token = localStorage.getItem('token');
+            let json = await request('get', '/warnings', {}, token);
             return json
         },
     }
